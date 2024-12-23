@@ -128,5 +128,24 @@ export const createGitHubActionsRole = (
         })
     );
 
+    // Add Secrets Manager permissions
+    role.addToPolicy(
+        new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                "secretsmanager:CreateSecret",
+                "secretsmanager:DeleteSecret",
+                "secretsmanager:Describe*",
+                "secretsmanager:List*",
+                "secretsmanager:Get*",
+                "secretsmanager:Tag*",
+            ],
+            // Scope to secrets with the 'eliza/' prefix
+            resources: [
+                `arn:aws:secretsmanager:${scope.region}:${scope.account}:secret:*`,
+            ],
+        })
+    );
+
     return role;
 };

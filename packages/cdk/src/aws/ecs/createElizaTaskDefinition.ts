@@ -1,8 +1,23 @@
-
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as secretsManager from "aws-cdk-lib/aws-secretsmanager";
 import * as cdk from "aws-cdk-lib";
+
+/**
+ * Helper function to create a secret reference for ECS
+ * @param scope The CDK Stack scope
+ * @param secretName The name of the secret in Secrets Manager
+ * @returns An ECS Secret reference
+ */
+const createSecretReference = (
+    scope: cdk.Stack,
+    secretName: string
+): ecs.Secret => {
+    return ecs.Secret.fromSecretsManager(
+        secretsManager.Secret.fromSecretNameV2(scope, secretName, secretName)
+    );
+};
 
 /**
  * Creates a Fargate task definition for the Eliza AI service.
@@ -46,6 +61,12 @@ export const createElizaTaskDefinition = (
             NODE_ENV: "production",
             // TODO: Replace in-memory database with PostgreSQL configuration
             DATABASE_TYPE: "memory",
+        },
+        secrets: {
+            OPENAI_API_KEY: createSecretReference(scope, "OPENAI_API_KEY"),
+            TWITTER_EMAIL: createSecretReference(scope, "TWITTER_EMAIL"),
+            TWITTER_USERNAME: createSecretReference(scope, "TWITTER_USERNAME"),
+            TWITTER_PASSWORD: createSecretReference(scope, "TWITTER_PASSWORD"),
         },
     });
 
