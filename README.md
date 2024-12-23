@@ -18,8 +18,6 @@ This guide will walk you through the process of setting up your own agents by fo
 3. Set branch protection rules to ensure only authorized changes are made to the main branch.
 4. Within the `eliza-fleet` environment, add the following secrets:
     - `AWS_ACCOUNT_ID`: Your AWS account ID.
-    - `AWS_REGION`: The AWS region you are using (e.g., `us-east-1`).
-    - `AWS_ROLE_NAME`: The name of the IAM role for GitHub Actions.
 
 ### Step 3: Deploy AWS OIDC Setup Locally
 
@@ -52,7 +50,8 @@ This guide will walk you through the process of setting up your own agents by fo
 5. Deploy the CDK stack to set up the OIDC provider and IAM roles:
 
     ```bash
-    pnpm cdk deploy GitHubActionsStack
+    export GITHUB_REPOSITORY=lachiejames/eliza-fleet
+    pnpm cdk deploy github-actions
     ```
 
     This will create the necessary AWS resources for GitHub Actions to authenticate using OIDC.
