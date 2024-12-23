@@ -1,0 +1,42 @@
+# Development artifacts and dependencies
+.git/
+.github/
+.vscode/
+**/node_modules/
+**/.turbo/
+**/dist/
+**/.next/
+**/.cache/
+coverage/
+**/__tests__/
+**/*.test.*
+**/*.spec.*
+
+# Documentation and markdown files
+docs/
+**/README*.md
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+LICENSE
+
+# Environment and local config files
+.env*
+**/.env*
+.editorconfig
+.eslintrc.json
+.gitignore
+.prettierignore
+.nvmrc
+codecov.yml
+commitlint.config.js
+
+# Logs and caches
+**/*.log
+.DS_Store
+**/.DS_Store
+
+# Config files not needed at runtime
+renovate.json
+prettier.config.cjs
+lerna.json
