@@ -5,6 +5,13 @@ on:
         branches:
             - main-lachie
 
+env:
+    # Created in github-actions stack to deploy other stacks on GitHub Actions
+    AWS_ROLE_NAME: github-actions-role
+
+    # Required for AWS region
+    AWS_REGION: us-east-1
+
 jobs:
     docker_build_eliza_agent:
         runs-on: ubuntu-latest
@@ -21,16 +28,10 @@ jobs:
 
         env:
             # Required for ECR login
-            AWS_ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+            AWS_ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
 
             # Deploy the image built in the previous job
             GIT_COMMIT_SHA: ${{ github.sha }}
-
-            # Created in github-actions stack to deploy other stacks on GitHub Actions
-            AWS_ROLE_NAME: github-actions-role
-
-            # Required for AWS region
-            AWS_REGION: us-east-1
 
         steps:
             - uses: actions/checkout@v4
@@ -84,10 +85,6 @@ jobs:
             GIT_COMMIT_SHA: ${{ github.sha }}
             # Required for AWS role
             AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-            # Required for AWS region
-            AWS_REGION: us-east-1
-            # Created in github-actions stack to deploy other stacks on GitHub Actions
-            AWS_ROLE_NAME: github-actions-role
 
         steps:
             - uses: actions/checkout@v4
