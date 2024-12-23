@@ -102,7 +102,7 @@ jobs:
 
             # Generate CDK diff for logging purposes
             - name: Generate CDK diff
-              run: pnpm cdk diff --require-approval never
+              run: pnpm cdk diff --require-approval never ElizaFleetStack
 
             # - name: CDK Deploy
-            #   run: pnpm cdk deploy --require-approval never
+            #   run: pnpm cdk deploy --require-approval never ElizaFleetStack
