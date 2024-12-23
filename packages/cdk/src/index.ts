@@ -5,14 +5,18 @@ import { GitHubActionsStack } from "./stacks/GithubActionsStack";
 // Initialize the CDK app
 const app = new cdk.App();
 
-new ElizaFleetStack(app, "ElizaFleetStack", {
+const elizaFleetStackName = "eliza-fleet";
+new ElizaFleetStack(app, elizaFleetStackName, {
+    stackName: elizaFleetStackName,
     env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION,
     },
 });
 
-new GitHubActionsStack(app, "GitHubActionsStack", {
+const githubActionsStackName = "github-actions";
+new GitHubActionsStack(app, githubActionsStackName, {
+    stackName: githubActionsStackName,
     env: {
         account: process.env.CDK_DEFAULT_ACCOUNT,
         region: process.env.CDK_DEFAULT_REGION,

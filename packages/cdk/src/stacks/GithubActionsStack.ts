@@ -1,40 +1,26 @@
 import * as cdk from "aws-cdk-lib";
-import * as iam from "aws-cdk-lib/aws-iam";
+import { createGitHubOIDCProvider } from "../aws/iam/createGitHubOIDCProvider";
+import { createGitHubActionsRole } from "../aws/iam/createGitHubActionsRole";
 
+/**
+ * AWS CDK Stack that sets up GitHub Actions OIDC authentication with AWS.
+ * This stack creates the necessary infrastructure for secure, keyless authentication
+ * between GitHub Actions and AWS using OpenID Connect (OIDC).
+ *
+ * @see {@link https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services GitHub OIDC Documentation}
+ *
+ * The stack creates:
+ * 1. An OIDC Provider that trusts GitHub's token service
+ * 2. An IAM Role that can be assumed by GitHub Actions workflows
+ *
+ * This eliminates the need for storing long-lived AWS credentials in GitHub Secrets
+ * and provides a more secure authentication method for CI/CD workflows.
+ */
 export class GitHubActionsStack extends cdk.Stack {
     constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        // Define the OIDC provider
-        const oidcProvider = new iam.OpenIdConnectProvider(
-            this,
-            "GitHubOIDCProvider",
-            {
-                url: "https://token.actions.githubusercontent.com",
-                clientIds: ["sts.amazonaws.com"],
-            }
-        );
-
-        // Define the IAM role
-        const githubActionsRole = new iam.Role(this, "GitHubActionsRole", {
-            assumedBy: new iam.WebIdentityPrincipal(
-                oidcProvider.openIdConnectProviderArn,
-                {
-                    StringEquals: {
-                        "token.actions.githubusercontent.com:aud":
-                            "sts.amazonaws.com",
-                    },
-                }
-            ),
-            description: "Role for GitHub Actions to access AWS resources",
-        });
-
-        // Attach necessary policies
-        githubActionsRole.addToPolicy(
-            new iam.PolicyStatement({
-                actions: ["ecr:GetAuthorizationToken"],
-                resources: ["*"],
-            })
-        );
+        const oidcProvider = createGitHubOIDCProvider(this);
+        createGitHubActionsRole(this, oidcProvider.openIdConnectProviderArn);
     }
 }
