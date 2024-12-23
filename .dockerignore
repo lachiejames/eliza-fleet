@@ -1,3 +1,7 @@
+# Enable more cache hits in .github/workflows/deploy.yml
+# because I'll be making lots of changes to these files
+.packages/cdk/
+
 # Development artifacts and dependencies
 .git/
 .github/

@@ -1,94 +1,49 @@
 import * as cdk from "aws-cdk-lib";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as ecs from "aws-cdk-lib/aws-ecs";
-import * as iam from "aws-cdk-lib/aws-iam";
-import * as ecr from "aws-cdk-lib/aws-ecr";
 import { Construct } from "constructs";
+import { createElizaVPC } from "../aws/vpc/createElizaVPC";
+import { createElizaECRRepo } from "../aws/ecr/createElizaECRRepo";
+import { createElizaCluster } from "../aws/ecs/createElizaCluster";
+import { createElizaTaskRole } from "../aws/iam/createElizaTaskRole";
+import { createElizaTaskDefinition } from "../aws/ecs/createElizaTaskDefinition";
+import { createElizaSecurityGroup } from "../aws/ec2/createElizaSecurityGroup";
+import { createElizaService } from "../aws/ecs/createElizaService";
 
+/**
+ * AWS CDK Stack that sets up the core infrastructure for the Eliza AI service.
+ * This stack creates a containerized deployment environment using AWS ECS Fargate.
+ *
+ * Infrastructure components:
+ * 1. VPC with 2 Availability Zones and 1 NAT Gateway
+ * 2. ECR Repository for Docker images
+ * 3. ECS Cluster for container orchestration
+ * 4. Fargate Task Definition and Service
+ * 5. Security Groups for network access control
+ *
+ * The stack is designed for cost-efficiency in development while maintaining
+ * high availability through multi-AZ deployment.
+ */
 export class ElizaFleetStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        // Create VPC
-        const vpc = new ec2.Vpc(this, "ElizaVPC", {
-            maxAzs: 2,
-            natGateways: 1, // Reduce costs by using only one NAT gateway
-        });
-
-        // Create ECR repository for our Docker images
-        const repository = new ecr.Repository(this, "ElizaRepository", {
-            repositoryName: "eliza-ai",
-            removalPolicy: cdk.RemovalPolicy.DESTROY, // For development; change for production
-        });
-
-        // Create ECS Cluster
-        const cluster = new ecs.Cluster(this, "ElizaCluster", {
-            vpc,
-        });
-
-        // Create Fargate Task Role
-        const taskRole = new iam.Role(this, "ElizaTaskRole", {
-            assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-        });
-
-        // Create Fargate Task Definition
-        const taskDefinition = new ecs.FargateTaskDefinition(
+        // Create core infrastructure components
+        const vpc = createElizaVPC(this);
+        const repository = createElizaECRRepo(this);
+        const cluster = createElizaCluster(this, vpc);
+        const taskRole = createElizaTaskRole(this);
+        const taskDefinition = createElizaTaskDefinition(
             this,
-            "ElizaTaskDef",
-            {
-                memoryLimitMiB: 512, // Minimum memory for cost efficiency
-                cpu: 256, // 0.25 vCPU
-                taskRole,
-            }
+            taskRole,
+            repository
         );
-
-        // Add container to task definition
-        taskDefinition.addContainer("ElizaContainer", {
-            image: ecs.ContainerImage.fromEcrRepository(repository),
-            memoryLimitMiB: 512,
-            logging: ecs.LogDrivers.awsLogs({ streamPrefix: "eliza-ai" }),
-            environment: {
-                NODE_ENV: "production",
-                // TODO: Replace in-memory database with PostgreSQL configuration
-                DATABASE_TYPE: "memory",
-            },
-            portMappings: [{ containerPort: 3000 }],
-        });
+        const securityGroup = createElizaSecurityGroup(this, vpc);
 
         // Create Fargate Service
-        const service = new ecs.FargateService(this, "ElizaService", {
+        const service = createElizaService(
+            this,
             cluster,
             taskDefinition,
-            desiredCount: 1, // Start with one instance
-            assignPublicIp: true, // Required for pulling images and other external communications
-            vpcSubnets: {
-                subnetType: ec2.SubnetType.PUBLIC,
-            },
-        });
-
-        // Add security group rules
-        const securityGroup = new ec2.SecurityGroup(
-            this,
-            "ElizaSecurityGroup",
-            {
-                vpc,
-                description: "Security group for Eliza AI service",
-                allowAllOutbound: true,
-            }
+            securityGroup
         );
-
-        securityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
-            ec2.Port.tcp(3000),
-            "Allow inbound HTTP traffic"
-        );
-
-        service.connections.addSecurityGroup(securityGroup);
-
-        // Output the repository URI
-        new cdk.CfnOutput(this, "RepositoryUri", {
-            value: repository.repositoryUri,
-            description: "ECR Repository URI",
-        });
     }
 }
