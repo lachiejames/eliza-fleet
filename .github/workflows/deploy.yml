@@ -1,0 +1,108 @@
+name: Deploy
+
+on:
+    push:
+        # branches:
+        #     - main-lachie
+
+jobs:
+    docker_build:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
+        permissions:
+            id-token: write # Required for aws-actions/configure-aws-credentials to assume an IAM role
+            contents: read # Required for aws-actions/configure-aws-credentials to assume an IAM role
+
+        # Load vars and secrets from this environment
+        # https://github.com/lachiejames/eliza-fleet/settings/environments/5017215598/edit
+        environment: eliza-fleet
+
+        env:
+            # Required for ECR login
+            AWS_ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+            # Tag the image with the commit that triggered the build
+            GIT_COMMIT_SHA: ${{ github.sha }}
+
+        steps:
+            - uses: actions/checkout@v4
+
+            # Login to AWS via OIDC https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4.0.2
+              with:
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            # Required for push to ECR
+            - name: ECR Login
+              run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ECR_REGISTRY }}
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build and push
+              uses: docker/build-push-action@v6
+              with:
+                  push: true
+                  tags: ${{ env.AWS_ECR_REGISTRY }}/eliza-agent:${{ env.GIT_COMMIT_SHA }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+    cdk_deploy:
+        needs: [docker_build]
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
+        permissions:
+            id-token: write # Required for aws-actions/configure-aws-credentials to assume an IAM role
+            contents: read # Required for aws-actions/configure-aws-credentials to assume an IAM role
+
+        # Disable concurrency to ensure that the deploy job always completes without being cancelled
+        concurrency:
+            group: deploy
+            cancel-in-progress: false
+
+        # Load vars and secrets from this environment
+        # https://github.com/lachiejames/eliza-fleet/settings/environments/5017215598/edit
+        environment: eliza-fleet
+
+        env:
+            # Deploy the image built in the previous job
+            GIT_COMMIT_SHA: ${{ github.sha }}
+
+        steps:
+            - uses: actions/checkout@v4
+
+            # Login to AWS via OIDC https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4.0.2
+              with:
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 9.4.0
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: "pnpm"
+
+            # Above may restore cache directory, but we still need to install node_modules
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            # Generate CDK diff for logging purposes
+            - name: Generate CDK diff
+              run: pnpm cdk diff --require-approval never
+
+            # - name: CDK Deploy
+            #   run: pnpm cdk deploy --require-approval never
