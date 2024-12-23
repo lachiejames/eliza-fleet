@@ -1,6 +1,7 @@
 {
     "name": "eliza",
     "scripts": {
+        "cdk": "pnpm --filter=@ai16z/cdk build && pnpm --filter=@ai16z/cdk cdk",
         "preinstall": "npx only-allow pnpm",
         "build": "turbo run build --filter=!eliza-docs",
         "build-docker": "turbo run build",
