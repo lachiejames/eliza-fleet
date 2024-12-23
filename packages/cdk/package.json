@@ -1,0 +1,22 @@
+{
+    "name": "@ai16z/cdk",
+    "version": "0.1.6",
+    "main": "dist/index.js",
+    "type": "module",
+    "types": "dist/index.d.ts",
+    "dependencies": {
+        "@ai16z/eliza": "workspace:*"
+    },
+    "devDependencies": {
+        "aws-cdk": "2.173.2",
+        "aws-cdk-lib": "2.173.2",
+        "constructs": "10.4.2",
+        "tsup": "8.3.5"
+    },
+    "scripts": {
+        "cdk": "cdk",
+        "build": "tsup --format esm --dts",
+        "dev": "tsup --format esm --dts --watch",
+        "lint": "eslint --fix  --cache ."
+    }
+}
