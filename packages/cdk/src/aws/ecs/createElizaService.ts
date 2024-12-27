@@ -41,9 +41,11 @@ export const createElizaService = (
         cluster,
         taskDefinition,
         desiredCount,
-        vpcSubnets: {
-            subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS, // Run in private subnets
-        },
+        // TODO: Make private
+        assignPublicIp: true,
+        // vpcSubnets: {
+        //     subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS, // Run in private subnets
+        // },
         securityGroups: [securityGroup],
     });
 

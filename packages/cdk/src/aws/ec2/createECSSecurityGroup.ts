@@ -26,12 +26,5 @@ export const createECSSecurityGroup = ({
         allowAllOutbound: true, // Allows outbound internet access
     });
 
-    // Add inbound rules
-    securityGroup.addIngressRule(
-        ec2.Peer.anyIpv4(), // TODO: Replace with a specific IP address
-        ec2.Port.tcp(3000),
-        "Allow inbound traffic on port 3000"
-    );
-
     return securityGroup;
 };

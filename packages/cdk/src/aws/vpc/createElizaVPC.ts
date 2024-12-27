@@ -18,10 +18,7 @@ export const createElizaVPC = (
         scope: cdk.Stack;
     }
 ) => {
-    const vpcName = `${scope.stackName}-vpc`;
-    return new ec2.Vpc(scope, vpcName, {
-        vpcName,
-        maxAzs: 2,
-        natGateways: 1, // Cost optimization: Using single NAT gateway instead of one per AZ
+    return ec2.Vpc.fromLookup(scope, 'eliza-vpc', {
+        vpcId: 'vpc-cb06e5b6', // Default VPC
     });
 };
