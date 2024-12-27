@@ -14,8 +14,27 @@ import * as cdk from "aws-cdk-lib";
  */
 export const createElizaTaskRole = (scope: cdk.Stack) => {
     const roleName = `${scope.stackName}-role`;
-    return new iam.Role(scope, roleName, {
+    const taskRole = new iam.Role(scope, roleName, {
         roleName,
         assumedBy: new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
     });
+
+    // Add ECR pull permissions
+    taskRole.addToPolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+            'ecr:GetAuthorizationToken',
+            'ecr:BatchCheckLayerAvailability',
+            'ecr:GetDownloadUrlForLayer',
+            'ecr:BatchGetImage'
+        ],
+        resources: ['*']
+    }));
+
+    // Add execution role policy
+    taskRole.addManagedPolicy(
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy')
+    );
+
+    return taskRole;
 };

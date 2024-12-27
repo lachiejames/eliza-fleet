@@ -2,15 +2,8 @@ name: Deploy
 
 on:
     push:
-        branches:
-            - main-lachie
-
-env:
-    # Created in github-actions stack to deploy other stacks on GitHub Actions
-    AWS_ROLE_NAME: github-actions-role
-
-    # Required for AWS region
-    AWS_REGION: us-east-1
+        # branches:
+        #     - main-lachie
 
 jobs:
     docker_build_eliza_agent:
@@ -28,7 +21,7 @@ jobs:
 
         env:
             # Required for ECR login
-            AWS_ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+            AWS_ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
             # Deploy the image built in the previous job
             GIT_COMMIT_SHA: ${{ github.sha }}
@@ -40,12 +33,12 @@ jobs:
             - name: Login to AWS
               uses: aws-actions/configure-aws-credentials@v4.0.2
               with:
-                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE_NAME }}
-                  aws-region: ${{ env.AWS_REGION }}
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ secrets.AWS_REGION }}
 
             # Required for push to ECR
             - name: ECR Login
-              run: aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ECR_REGISTRY }}
+              run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ECR_REGISTRY }}
 
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v3
@@ -57,7 +50,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                   push: true
-                  tags: ${{ env.AWS_ECR_REGISTRY }}/eliza-agent:${{ env.GIT_COMMIT_SHA }}
+                  tags: ${{ env.AWS_ECR_REGISTRY }}/eliza-fleet-repo:${{ env.GIT_COMMIT_SHA }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
 
@@ -83,8 +76,6 @@ jobs:
         env:
             # Deploy the image built in the previous job
             GIT_COMMIT_SHA: ${{ github.sha }}
-            # Required for AWS role
-            AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
         steps:
             - uses: actions/checkout@v4
@@ -93,8 +84,8 @@ jobs:
             - name: Login to AWS
               uses: aws-actions/configure-aws-credentials@v4.0.2
               with:
-                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ env.AWS_ROLE_NAME }}
-                  aws-region: ${{ env.AWS_REGION }}
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ secrets.AWS_REGION }}
 
             - uses: pnpm/action-setup@v3
               with:
@@ -113,5 +104,5 @@ jobs:
             - name: Generate CDK diff
               run: pnpm cdk diff --require-approval never eliza-fleet
 
-            # - name: CDK Deploy
-            #   run: pnpm cdk deploy --require-approval never eliza-fleet
+            - name: CDK Deploy
+              run: pnpm cdk deploy --require-approval never eliza-fleet

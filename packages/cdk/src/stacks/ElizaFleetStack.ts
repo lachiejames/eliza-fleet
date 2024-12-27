@@ -7,6 +7,7 @@ import { createElizaTaskRole } from "../aws/iam/createElizaTaskRole";
 import { createElizaTaskDefinition } from "../aws/ecs/createElizaTaskDefinition";
 import { createElizaSecurityGroup } from "../aws/ec2/createElizaSecurityGroup";
 import { createElizaService } from "../aws/ecs/createElizaService";
+import { characters } from "../config/characters";
 
 /**
  * AWS CDK Stack that sets up the core infrastructure for the Eliza AI service.
@@ -26,24 +27,30 @@ export class ElizaFleetStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        // Create core infrastructure components
+        // Create shared infrastructure
         const vpc = createElizaVPC(this);
         const repository = createElizaECRRepo(this);
         const cluster = createElizaCluster(this, vpc);
         const taskRole = createElizaTaskRole(this);
-        const taskDefinition = createElizaTaskDefinition(
-            this,
-            taskRole,
-            repository
-        );
         const securityGroup = createElizaSecurityGroup(this, vpc);
 
-        // Create Fargate Service
-        const service = createElizaService(
-            this,
-            cluster,
-            taskDefinition,
-            securityGroup
-        );
+        // Create services for each character
+        characters.forEach((characterConfig) => {
+            const taskDefinition = createElizaTaskDefinition(
+                this,
+                taskRole,
+                repository,
+                characterConfig
+            );
+
+            createElizaService(
+                this,
+                cluster,
+                taskDefinition,
+                securityGroup,
+                characterConfig.name,
+                characterConfig.desiredCount
+            );
+        });
     }
 }
