@@ -32,8 +32,13 @@ export const getECSSecret = (
  * @returns Record of environment variable names to ECS Secret references
  */
 export const getECSSecrets = (
-    scope: cdk.Stack,
-    secrets: Record<string, string>
+    {
+        scope,
+        secrets,
+    }: {
+        scope: cdk.Stack;
+        secrets: Record<string, string>;
+    }
 ): Record<string, ecs.Secret> => {
     const ecsSecrets: Record<string, ecs.Secret> = {};
 

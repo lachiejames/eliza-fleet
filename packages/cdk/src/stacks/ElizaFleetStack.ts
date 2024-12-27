@@ -1,13 +1,16 @@
 import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import { createElizaVPC } from "../aws/vpc/createElizaVPC";
 import { createElizaECRRepo } from "../aws/ecr/createElizaECRRepo";
 import { createElizaCluster } from "../aws/ecs/createElizaCluster";
 import { createElizaTaskRole } from "../aws/iam/createElizaTaskRole";
 import { createElizaTaskDefinition } from "../aws/ecs/createElizaTaskDefinition";
-import { createElizaSecurityGroup } from "../aws/ec2/createElizaSecurityGroup";
+import { createRDSSecurityGroup } from "../aws/ec2/createRDSSecurityGroup";
 import { createElizaService } from "../aws/ecs/createElizaService";
-import { characters } from "../config/characters";
+import { createElizaRDSInstance } from "../aws/rds/createElizaRDSInstance";
+import { createECSSecurityGroup } from "../aws/ec2/createECSSecurityGroup";
+import { buildCharacterConfig } from "../config/characters";
 
 /**
  * AWS CDK Stack that sets up the core infrastructure for the Eliza AI service.
@@ -28,29 +31,44 @@ export class ElizaFleetStack extends cdk.Stack {
         super(scope, id, props);
 
         // Create shared infrastructure
-        const vpc = createElizaVPC(this);
-        const repository = createElizaECRRepo(this);
-        const cluster = createElizaCluster(this, vpc);
-        const taskRole = createElizaTaskRole(this);
-        const securityGroup = createElizaSecurityGroup(this, vpc);
+        const vpc = createElizaVPC({ scope: this });
+        const repository = createElizaECRRepo({ scope: this });
+        const cluster = createElizaCluster({ scope: this, vpc });
+        const taskRole = createElizaTaskRole({ scope: this });
+        const rdsSecurityGroup = createRDSSecurityGroup({ scope: this, vpc });
+        const ecsSecurityGroup = createECSSecurityGroup({ scope: this, vpc });
 
+        // Add inbound rule to allow PostgreSQL access from ECS
+        rdsSecurityGroup.addIngressRule(
+            ec2.Peer.securityGroupId(ecsSecurityGroup.securityGroupId),
+            ec2.Port.tcp(5432),
+            "Allow PostgreSQL access from ECS"
+        );
+
+        const rdsInstance = createElizaRDSInstance({
+            scope: this,
+            vpc,
+            securityGroup: rdsSecurityGroup,
+        });
+
+        const characters = buildCharacterConfig(rdsInstance);
         // Create services for each character
         characters.forEach((characterConfig) => {
-            const taskDefinition = createElizaTaskDefinition(
-                this,
+            const taskDefinition = createElizaTaskDefinition({
+                scope: this,
                 taskRole,
                 repository,
-                characterConfig
-            );
+                characterConfig,
+            });
 
-            createElizaService(
-                this,
-                cluster,
-                taskDefinition,
-                securityGroup,
-                characterConfig.name,
-                characterConfig.desiredCount
-            );
+            // createElizaService({
+            //     scope: this,
+            //     cluster,
+            //     taskDefinition,
+            //     securityGroup: ecsSecurityGroup,
+            //     characterName: characterConfig.name,
+            //     desiredCount: characterConfig.desiredCount,
+            // });
         });
     }
 }

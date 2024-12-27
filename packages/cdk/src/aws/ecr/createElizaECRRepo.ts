@@ -13,7 +13,13 @@ import * as cdk from "aws-cdk-lib";
  * @param scope - The CDK Stack scope to create the repository in
  * @returns The created ECR repository
  */
-export const createElizaECRRepo = (scope: cdk.Stack) => {
+export const createElizaECRRepo = (
+    {
+        scope,
+    }: {
+        scope: cdk.Stack;
+    }
+) => {
     const repositoryName = `${scope.stackName}-repo`;
     return new ecr.Repository(scope, repositoryName, {
         repositoryName,

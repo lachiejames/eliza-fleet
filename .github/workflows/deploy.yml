@@ -52,7 +52,7 @@ jobs:
                   push: true
                   tags: ${{ env.AWS_ECR_REGISTRY }}/eliza-fleet-repo:${{ env.GIT_COMMIT_SHA }}
                   cache-from: type=gha
-                  cache-to: type=gha,mode=max
+                  cache-to: type=gha
 
     cdk_deploy_eliza_fleet:
         needs: [docker_build_eliza_agent]

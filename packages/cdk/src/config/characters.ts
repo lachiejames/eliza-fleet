@@ -1,3 +1,5 @@
+import * as rds from "aws-cdk-lib/aws-rds";
+
 export interface CharacterStackConfig {
     name: string;
     secrets: Record<string, string>;
@@ -5,7 +7,9 @@ export interface CharacterStackConfig {
     desiredCount: number;
 }
 
-export const characters: CharacterStackConfig[] = [
+export const buildCharacterConfig = (
+    database: rds.DatabaseInstance
+): CharacterStackConfig[] => [
     {
         name: "trump",
         secrets: {
@@ -13,6 +17,7 @@ export const characters: CharacterStackConfig[] = [
             TWITTER_EMAIL: "TRUMP_TWITTER_EMAIL",
             TWITTER_USERNAME: "TRUMP_TWITTER_USERNAME",
             TWITTER_PASSWORD: "TRUMP_TWITTER_PASSWORD",
+            POSTGRES_URL: "POSTGRES_URL", // TODO: generate dynamically
         },
         environment: {
             CACHE_STORE: "database",

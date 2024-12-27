@@ -12,11 +12,20 @@ interface CharacterConfig {
 }
 
 export const createElizaTaskDefinition = (
-    scope: cdk.Stack,
-    taskRole: iam.IRole,
-    repository: ecr.IRepository,
-    characterConfig: CharacterConfig
+    {
+        scope,
+        taskRole,
+        repository,
+        characterConfig,
+    }: {
+        scope: cdk.Stack;
+        taskRole: iam.IRole;
+        repository: ecr.IRepository;
+        characterConfig: CharacterConfig;
+    }
 ) => {
+    const { name, secrets, environment } = characterConfig;
+
     const taskDefinitionName = `${scope.stackName}-${characterConfig.name}-task-definition`;
     const taskDefinition = new ecs.FargateTaskDefinition(
         scope,
@@ -41,7 +50,7 @@ export const createElizaTaskDefinition = (
             "pnpm",
             "start",
             "--character",
-            `/app/agent/characters/${characterConfig.name}.character.json`, // Use absolute path
+            `/app/agent/characters/${name}.character.json`, // Use absolute path
         ],
         logging: ecs.LogDrivers.awsLogs({
             streamPrefix: containerName,
@@ -55,10 +64,10 @@ export const createElizaTaskDefinition = (
         ],
         healthCheck: {
             command: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"],
-            startPeriod: cdk.Duration.seconds(300),
+            startPeriod: cdk.Duration.seconds(60),
         },
-        environment: characterConfig.environment,
-        secrets: getECSSecrets(scope, characterConfig.secrets),
+        environment,
+        secrets: getECSSecrets({ scope, secrets }),
     });
 
     return taskDefinition;

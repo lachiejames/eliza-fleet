@@ -11,7 +11,13 @@ import * as cdk from "aws-cdk-lib";
  * @param scope - The CDK Stack scope to create the VPC in
  * @returns The created VPC instance
  */
-export const createElizaVPC = (scope: cdk.Stack) => {
+export const createElizaVPC = (
+    {
+        scope,
+    }: {
+        scope: cdk.Stack;
+    }
+) => {
     const vpcName = `${scope.stackName}-vpc`;
     return new ec2.Vpc(scope, vpcName, {
         vpcName,

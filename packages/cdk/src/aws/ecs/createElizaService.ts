@@ -19,12 +19,21 @@ import * as cdk from "aws-cdk-lib";
  * @returns The created Fargate service
  */
 export const createElizaService = (
-    scope: cdk.Stack,
-    cluster: ecs.ICluster,
-    taskDefinition: ecs.FargateTaskDefinition,
-    securityGroup: ec2.ISecurityGroup,
-    characterName: string,
-    desiredCount: number
+    {
+        scope,
+        cluster,
+        taskDefinition,
+        securityGroup,
+        characterName,
+        desiredCount,
+    }: {
+        scope: cdk.Stack;
+        cluster: ecs.ICluster;
+        taskDefinition: ecs.FargateTaskDefinition;
+        securityGroup: ec2.ISecurityGroup;
+        characterName: string;
+        desiredCount: number;
+    }
 ) => {
     const serviceName = `${scope.stackName}-${characterName}-service`;
     const service = new ecs.FargateService(scope, serviceName, {

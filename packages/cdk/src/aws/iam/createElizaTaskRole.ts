@@ -12,7 +12,13 @@ import * as cdk from "aws-cdk-lib";
  * @param scope - The CDK Stack scope to create the role in
  * @returns The created IAM role
  */
-export const createElizaTaskRole = (scope: cdk.Stack) => {
+export const createElizaTaskRole = (
+    {
+        scope,
+    }: {
+        scope: cdk.Stack;
+    }
+) => {
     const roleName = `${scope.stackName}-role`;
     const taskRole = new iam.Role(scope, roleName, {
         roleName,
@@ -28,6 +34,13 @@ export const createElizaTaskRole = (scope: cdk.Stack) => {
             'ecr:GetDownloadUrlForLayer',
             'ecr:BatchGetImage'
         ],
+        resources: ['*']
+    }));
+
+    // Add secrets manager policy
+    taskRole.addToPolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['secretsmanager:GetSecretValue'],
         resources: ['*']
     }));
 
