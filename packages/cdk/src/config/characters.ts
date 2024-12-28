@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as rds from "aws-cdk-lib/aws-rds";
+import * as elasticache from "aws-cdk-lib/aws-elasticache";
 import { getECSSecret } from "../aws/secretsmanager/getECSSecret";
 
 export interface CharacterStackConfig {
@@ -12,19 +13,22 @@ export interface CharacterStackConfig {
 
 export const buildCharacterConfig = ({
     scope,
-    database,
+    rdsInstance,
+    redisInstance,
 }: {
     scope: cdk.Stack;
-    database: rds.DatabaseInstance;
+    rdsInstance: rds.DatabaseInstance;
+    redisInstance: elasticache.CfnCacheCluster;
 }): CharacterStackConfig[] => [
     {
         name: "trump",
         desiredCount: 1,
         environment: {
-            CACHE_STORE: "database",
+            CACHE_STORE: "redis",
             NODE_ENV: "production",
             SERVER_PORT: "3000",
             TWITTER_DRY_RUN: "false",
+            REDIS_URL: `redis://${redisInstance.attrRedisEndpointAddress}:${redisInstance.attrRedisEndpointPort}`,
         },
         secrets: {
             OPENAI_API_KEY: getECSSecret({
@@ -46,7 +50,7 @@ export const buildCharacterConfig = ({
             POSTGRES_CREDENTIALS: getECSSecret({
                 scope,
                 // Points to the database secret created by the CDK stack
-                secretName: database.secret.secretName,
+                secretName: rdsInstance.secret.secretName,
             }),
         },
     },

@@ -6,8 +6,10 @@ import { createElizaCluster } from "../aws/ecs/createElizaCluster";
 import { createElizaTaskRole } from "../aws/iam/createElizaTaskRole";
 import { createElizaTaskDefinition } from "../aws/ecs/createElizaTaskDefinition";
 import { createRDSSecurityGroup } from "../aws/ec2/createRDSSecurityGroup";
+import { createRedisSecurityGroup } from "../aws/ec2/createRedisSecurityGroup";
 import { createElizaService } from "../aws/ecs/createElizaService";
 import { createElizaRDSInstance } from "../aws/rds/createElizaRDSInstance";
+import { createElizaRedisInstance } from "../aws/elasticache/createElizaRedisInstance";
 import { createECSSecurityGroup } from "../aws/ec2/createECSSecurityGroup";
 import { buildCharacterConfig } from "../config/characters";
 import { createElizaDockerAsset } from "../aws/ecr/createElizaDockerAsset";
@@ -44,6 +46,10 @@ export class ElizaFleetStack extends cdk.Stack {
         const cluster = createElizaCluster({ scope: this, vpc });
         const taskRole = createElizaTaskRole({ scope: this });
         const rdsSecurityGroup = createRDSSecurityGroup({ scope: this, vpc });
+        const redisSecurityGroup = createRedisSecurityGroup({
+            scope: this,
+            vpc,
+        });
         const ecsSecurityGroup = createECSSecurityGroup({ scope: this, vpc });
 
         rdsSecurityGroup.addIngressRule(
@@ -56,6 +62,14 @@ export class ElizaFleetStack extends cdk.Stack {
             "Allow PostgreSQL access from ECS"
         );
 
+        redisSecurityGroup.addIngressRule(
+            isPrivate
+                ? ec2.Peer.securityGroupId(ecsSecurityGroup.securityGroupId)
+                : ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(6379),
+            "Allow Redis access from ECS"
+        );
+
         const rdsInstance = createElizaRDSInstance({
             scope: this,
             vpc,
@@ -63,10 +77,18 @@ export class ElizaFleetStack extends cdk.Stack {
             isPrivate,
         });
 
+        const redisInstance = createElizaRedisInstance({
+            scope: this,
+            vpc,
+            securityGroup: redisSecurityGroup,
+            isPrivate,
+        });
+
         const dockerAsset = createElizaDockerAsset({ scope: this });
         const characters = buildCharacterConfig({
             scope: this,
-            database: rdsInstance,
+            rdsInstance,
+            redisInstance,
         });
 
         // Create services for each character
