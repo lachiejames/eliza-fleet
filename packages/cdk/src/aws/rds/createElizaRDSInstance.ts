@@ -20,7 +20,7 @@ export const createElizaRDSInstance = ({
         }),
         databaseName: "eliza",
         engine: rds.DatabaseInstanceEngine.postgres({
-            version: rds.PostgresEngineVersion.VER_13_18,
+            version: rds.PostgresEngineVersion.VER_15_10,
         }),
         instanceType: ec2.InstanceType.of(
             ec2.InstanceClass.T4G,
