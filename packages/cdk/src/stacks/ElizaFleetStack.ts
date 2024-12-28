@@ -46,9 +46,12 @@ export class ElizaFleetStack extends cdk.Stack {
         const rdsSecurityGroup = createRDSSecurityGroup({ scope: this, vpc });
         const ecsSecurityGroup = createECSSecurityGroup({ scope: this, vpc });
 
-        // Add inbound rule to allow PostgreSQL access from ECS
         rdsSecurityGroup.addIngressRule(
-            ec2.Peer.anyIpv4(),
+            isPrivate
+                ? // Add inbound rule to allow PostgreSQL access from ECS
+                  ec2.Peer.securityGroupId(ecsSecurityGroup.securityGroupId)
+                : // Public mode allows access from any IP (useful for debugging)
+                  ec2.Peer.anyIpv4(),
             ec2.Port.tcp(5432),
             "Allow PostgreSQL access from ECS"
         );
