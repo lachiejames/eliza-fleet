@@ -3,12 +3,10 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecr_assets from "aws-cdk-lib/aws-ecr-assets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
-import * as rds from "aws-cdk-lib/aws-rds";
-import { getECSSecret, getECSSecrets } from "../secretsmanager/getECSSecret";
 
 interface CharacterConfig {
     name: string;
-    secrets: Record<string, string>;
+    secrets: Record<string, ecs.Secret>;
     environment: Record<string, string>;
 }
 
@@ -17,13 +15,11 @@ export const createElizaTaskDefinition = ({
     taskRole,
     dockerAsset,
     characterConfig,
-    database,
 }: {
     scope: cdk.Stack;
     taskRole: iam.IRole;
     dockerAsset: ecr_assets.DockerImageAsset;
     characterConfig: CharacterConfig;
-    database: rds.DatabaseInstance;
 }) => {
     const { name, secrets, environment } = characterConfig;
 
@@ -68,20 +64,8 @@ export const createElizaTaskDefinition = ({
             command: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"],
             startPeriod: cdk.Duration.seconds(60),
         },
-        environment: {
-            ...environment,
-            POSTGRES_HOST: database.instanceEndpoint.hostname,
-            POSTGRES_PORT: database.instanceEndpoint.port.toString(),
-            POSTGRES_DB: "eliza",
-        },
-        secrets: {
-            ...getECSSecrets({ scope, secrets }),
-            POSTGRES_CREDENTIALS: getECSSecret(
-                scope,
-                "POSTGRES_CREDENTIALS",
-                database.secret.secretName
-            ),
-        },
+        environment,
+        secrets,
     });
 
     return taskDefinition;

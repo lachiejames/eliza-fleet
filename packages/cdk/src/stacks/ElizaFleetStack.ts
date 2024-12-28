@@ -64,7 +64,10 @@ export class ElizaFleetStack extends cdk.Stack {
         });
 
         const dockerAsset = createElizaDockerAsset({ scope: this });
-        const characters = buildCharacterConfig(rdsInstance);
+        const characters = buildCharacterConfig({
+            scope: this,
+            database: rdsInstance,
+        });
 
         // Create services for each character
         characters.forEach((characterConfig) => {
@@ -73,7 +76,6 @@ export class ElizaFleetStack extends cdk.Stack {
                 taskRole,
                 dockerAsset,
                 characterConfig,
-                database: rdsInstance,
             });
 
             createElizaService({
