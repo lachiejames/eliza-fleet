@@ -1,0 +1,66 @@
+name: Deploy
+
+on:
+    push:
+        branches:
+            - main-lachie
+
+jobs:
+    cdk_deploy_eliza_fleet:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
+        permissions:
+            id-token: write # Required for aws-actions/configure-aws-credentials to assume an IAM role
+            contents: read # Required for aws-actions/configure-aws-credentials to assume an IAM role
+
+        # Disable concurrency to ensure that the deploy job always completes without being cancelled
+        concurrency:
+            group: cdk_deploy
+            cancel-in-progress: false
+
+        # Load vars and secrets from this environment
+        # https://github.com/lachiejames/eliza-fleet/settings/environments/5017215598/edit
+        environment: eliza-fleet
+
+        env:
+            AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+            ELIZA_PRIVATE_DEPLOYMENT: false # Keep false while in this development phase for easier debugging
+
+        steps:
+            - uses: actions/checkout@v4
+
+            # buildx is required to support caching docker layers
+            # using the GitHub Actions cache backend
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+              # with:
+              #     platforms: linux/arm64
+
+            # Login to AWS via OIDC https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4.0.2
+              with:
+                  role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 9.4.0
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: "pnpm"
+
+            # Above may restore cache directory, but we still need to install node_modules
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            # Generate CDK diff for logging purposes
+            - name: Generate CDK diff
+              run: pnpm cdk diff --require-approval never eliza-fleet
+
+            - name: CDK Deploy
+              run: pnpm cdk deploy --require-approval never eliza-fleet

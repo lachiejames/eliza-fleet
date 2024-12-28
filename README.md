@@ -1,141 +1,75 @@
 # Eliza 🤖
 
-<div align="center">
-  <img src="./docs/static/img/eliza_banner.jpg" alt="Eliza Banner" width="100%" />
-</div>
+For detailed documentation and examples, please visit the [original repository](https://github.com/ai16z/eliza).
 
-<div align="center">
+## Setting Up Your Own Agents
 
-📖 [Documentation](https://elizaos.github.io/eliza/) | 🎯 [Examples](https://github.com/thejoven/awesome-eliza)
+This guide will walk you through the process of setting up your own agents by forking this repository, configuring necessary credentials, and deploying the AWS OIDC setup.
 
-</div>
+### Step 1: Fork this Repository
 
-## 🌍 README Translations
+1. Go to the [eliza-fleet repository](https://github.com/lachiejames/eliza-fleet).
+2. Click on the "Fork" button in the top-right corner to create your own copy of the repository.
 
-[中文说明](./README_CN.md) | [日本語の説明](./README_JA.md) | [한국어 설명](./README_KOR.md) | [Français](./README_FR.md) | [Português](./README_PTBR.md) | [Türkçe](./README_TR.md) | [Русский](./README_RU.md) | [Español](./README_ES.md) | [Italiano](./README_IT.md) | [ไทย](./README_TH.md) | [Deutsch](./README_DE.md) | [Tiếng Việt](./README_VI.md) | [עִברִית](https://github.com/elizaos/Elisa/blob/main/README_HE.md) | [Tagalog](./README_TG.md)
+### Step 2: Configure GitHub Environment and Secrets
 
-## ✨ Features
+1. Navigate to your forked repository on GitHub.
+2. Go to "Settings" > "Environments" and create a new environment called `eliza-fleet`.
+3. Set branch protection rules to ensure only authorized changes are made to the main branch.
+4. Within the `eliza-fleet` environment, add the following secrets:
+    - `AWS_ACCOUNT_ID`: Your AWS account ID.
 
-- 🛠️ Full-featured Discord, Twitter and Telegram connectors
-- 🔗 Support for every model (Llama, Grok, OpenAI, Anthropic, etc.)
-- 👥 Multi-agent and room support
-- 📚 Easily ingest and interact with your documents
-- 💾 Retrievable memory and document store
-- 🚀 Highly extensible - create your own actions and clients
-- ☁️ Supports many models (local Llama, OpenAI, Anthropic, Groq, etc.)
-- 📦 Just works!
+### Step 3: Deploy AWS OIDC Setup Locally
 
-## Video Tutorials
+1. Clone your forked repository to your local machine:
 
-[AI Agent Dev School](https://www.youtube.com/watch?v=ArptLpQiKfI&list=PLx5pnFXdPTRzWla0RaOxALTSTnVq53fKL)
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/eliza.git
+    cd eliza
+    ```
 
-## 🎯 Use Cases
+2. Install Node.js using `nvm`:
 
-- 🤖 Chatbots
-- 🕵️ Autonomous Agents
-- 📈 Business Process Handling
-- 🎮 Video Game NPCs
-- 🧠 Trading
+    ```bash
+    nvm install
+    nvm use
+    ```
 
-## 🚀 Quick Start
+3. Install `pnpm` globally:
 
-### Prerequisites
+    ```bash
+    npm install -g pnpm
+    ```
 
-- [Python 2.7+](https://www.python.org/downloads/)
-- [Node.js 23+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
-- [pnpm](https://pnpm.io/installation)
+4. Install project dependencies:
 
-> **Note for Windows Users:** [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install-manual) is required.
+    ```bash
+    pnpm install
+    ```
 
-### Use the Starter (Recommended)
+5. Deploy the CDK stack to set up the OIDC provider and IAM roles:
 
-```bash
-git clone https://github.com/elizaos/eliza-starter.git
-cd eliza-starter
-cp .env.example .env
-pnpm i && pnpm build && pnpm start
-```
-Once the agent is running, You should see the message to run "pnpm start:client" at the end.
-Open another terminal and move to same directory and then run below command and follow the URL to chat to your agent. 
-```bash
-pnpm start:client
-```
+    ```bash
+    export GITHUB_REPOSITORY=lachiejames/eliza-fleet
+    pnpm cdk deploy github-actions
+    ```
 
-Then read the [Documentation](https://elizaos.github.io/eliza/) to learn how to customize your Eliza.
+    This will create the necessary AWS resources for GitHub Actions to authenticate using OIDC.
 
-### Manually Start Eliza (Only recommended if you know what you are doing)
+### Step 4: Manually Trigger the Deploy Workflow
 
-```bash
-# Clone the repository
-git clone https://github.com/elizaos/eliza.git
+1. Go to the "Actions" tab in your GitHub repository.
+2. Select the "Deploy" workflow.
+3. Click on "Run workflow" to manually trigger the deployment.
 
-# Checkout the latest release
-# This project iterates fast, so we recommend checking out the latest release
-git checkout $(git describe --tags --abbrev=0)
-```
+### Step 5: Verify Deployment on ECS
 
-### Start Eliza with Gitpod
+1. Once the workflow completes, verify that your agents are deployed on ECS.
+2. Check the AWS Management Console to ensure the ECS cluster, services, and tasks are correctly set up.
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/elizaos/eliza/tree/main)
+### Additional Resources
 
-### Edit the .env file
+- For more information on configuring OIDC with GitHub Actions, refer to the [GitHub documentation](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services).
+- For AWS CDK setup, refer to the [AWS CDK documentation](https://docs.aws.amazon.com/cdk/v2/guide/home.html).
 
-Copy .env.example to .env and fill in the appropriate values.
-
-```
-cp .env.example .env
-```
-
-Note: .env is optional. If your planning to run multiple distinct agents, you can pass secrets through the character JSON
-
-### Automatically Start Eliza
-
-This will run everything to setup the project and start the bot with the default character.
-
-```bash
-sh scripts/start.sh
-```
-
-### Edit the character file
-
-1. Open `packages/core/src/defaultCharacter.ts` to modify the default character. Uncomment and edit.
-
-2. To load custom characters:
-    - Use `pnpm start --characters="path/to/your/character.json"`
-    - Multiple character files can be loaded simultaneously
-3. Connect with X (Twitter)
-    - change `"clients": []` to `"clients": ["twitter"]` in the character file to connect with X
-
-### Manually Start Eliza
-
-```bash
-pnpm i
-pnpm build
-pnpm start
-
-# The project iterates fast, sometimes you need to clean the project if you are coming back to the project
-pnpm clean
-```
-
-#### Additional Requirements
-
-You may need to install Sharp. If you see an error when starting up, try installing it with the following command:
-
-```
-pnpm install --include=optional sharp
-```
-
-### Community & contact
-
-- [GitHub Issues](https://github.com/elizaos/eliza/issues). Best for: bugs you encounter using Eliza, and feature proposals.
-- [Discord](https://discord.gg/ai16z). Best for: sharing your applications and hanging out with the community.
-
-## Contributors
-
-<a href="https://github.com/elizaos/eliza/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=elizaos/eliza" />
-</a>
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=elizaos/eliza&type=Date)](https://star-history.com/#elizaos/eliza&Date)
+By following these steps, you can securely set up and deploy your own agents using this repository on Amazon ECS.
