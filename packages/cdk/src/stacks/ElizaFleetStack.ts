@@ -1,49 +1,87 @@
 import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Construct } from "constructs";
 import { createElizaVPC } from "../aws/vpc/createElizaVPC";
-import { createElizaECRRepo } from "../aws/ecr/createElizaECRRepo";
 import { createElizaCluster } from "../aws/ecs/createElizaCluster";
 import { createElizaTaskRole } from "../aws/iam/createElizaTaskRole";
 import { createElizaTaskDefinition } from "../aws/ecs/createElizaTaskDefinition";
-import { createElizaSecurityGroup } from "../aws/ec2/createElizaSecurityGroup";
+import { createRDSSecurityGroup } from "../aws/ec2/createRDSSecurityGroup";
 import { createElizaService } from "../aws/ecs/createElizaService";
+import { createElizaRDSInstance } from "../aws/rds/createElizaRDSInstance";
+import { createECSSecurityGroup } from "../aws/ec2/createECSSecurityGroup";
+import { buildCharacterConfig } from "../config/characters";
+import { createElizaDockerAsset } from "../aws/ecr/createElizaDockerAsset";
+
+export interface ElizaFleetStackProps extends cdk.StackProps {
+    isPrivate: boolean;
+}
 
 /**
  * AWS CDK Stack that sets up the core infrastructure for the Eliza AI service.
  * This stack creates a containerized deployment environment using AWS ECS Fargate.
  *
  * Infrastructure components:
- * 1. VPC with 2 Availability Zones and 1 NAT Gateway
+ * 1. VPC with configurable networking:
+ *    - Private mode: 2 AZs with NAT Gateway for secure deployment
+ *    - Public mode: Default VPC for cost optimization
  * 2. ECR Repository for Docker images
  * 3. ECS Cluster for container orchestration
  * 4. Fargate Task Definition and Service
  * 5. Security Groups for network access control
  *
- * The stack is designed for cost-efficiency in development while maintaining
- * high availability through multi-AZ deployment.
+ * The stack supports two deployment modes:
+ * - Private (isPrivate: true): More secure with private subnets and NAT Gateway
+ * - Public (isPrivate: false): More cost-effective using public subnets
  */
 export class ElizaFleetStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props?: ElizaFleetStackProps) {
         super(scope, id, props);
 
-        // Create core infrastructure components
-        const vpc = createElizaVPC(this);
-        const repository = createElizaECRRepo(this);
-        const cluster = createElizaCluster(this, vpc);
-        const taskRole = createElizaTaskRole(this);
-        const taskDefinition = createElizaTaskDefinition(
-            this,
-            taskRole,
-            repository
-        );
-        const securityGroup = createElizaSecurityGroup(this, vpc);
+        const { isPrivate } = props;
 
-        // Create Fargate Service
-        const service = createElizaService(
-            this,
-            cluster,
-            taskDefinition,
-            securityGroup
+        // Create shared infrastructure
+        const vpc = createElizaVPC({ scope: this, isPrivate });
+        const cluster = createElizaCluster({ scope: this, vpc });
+        const taskRole = createElizaTaskRole({ scope: this });
+        const rdsSecurityGroup = createRDSSecurityGroup({ scope: this, vpc });
+        const ecsSecurityGroup = createECSSecurityGroup({ scope: this, vpc });
+
+        // Add inbound rule to allow PostgreSQL access from ECS
+        rdsSecurityGroup.addIngressRule(
+            ec2.Peer.anyIpv4(),
+            ec2.Port.tcp(5432),
+            "Allow PostgreSQL access from ECS"
         );
+
+        const rdsInstance = createElizaRDSInstance({
+            scope: this,
+            vpc,
+            securityGroup: rdsSecurityGroup,
+            isPrivate,
+        });
+
+        const dockerAsset = createElizaDockerAsset({ scope: this });
+        const characters = buildCharacterConfig(rdsInstance);
+
+        // Create services for each character
+        characters.forEach((characterConfig) => {
+            const taskDefinition = createElizaTaskDefinition({
+                scope: this,
+                taskRole,
+                dockerAsset,
+                characterConfig,
+                database: rdsInstance,
+            });
+
+            createElizaService({
+                scope: this,
+                cluster,
+                taskDefinition,
+                securityGroup: ecsSecurityGroup,
+                characterName: characterConfig.name,
+                desiredCount: characterConfig.desiredCount,
+                isPrivate,
+            });
+        });
     }
 }

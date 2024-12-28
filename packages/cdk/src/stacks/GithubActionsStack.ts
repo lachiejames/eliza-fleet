@@ -20,7 +20,7 @@ export class GitHubActionsStack extends cdk.Stack {
     constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const oidcProvider = createGitHubOIDCProvider(this);
-        createGitHubActionsRole(this, oidcProvider.openIdConnectProviderArn);
+        const oidcProvider = createGitHubOIDCProvider({ scope: this });
+        createGitHubActionsRole({ scope: this, oidcProviderArn: oidcProvider.openIdConnectProviderArn });
     }
 }

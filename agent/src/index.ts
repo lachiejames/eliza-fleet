@@ -319,10 +319,15 @@ export function getTokenForProvider(
 }
 
 function initializeDatabase(dataDir: string) {
-    if (process.env.POSTGRES_URL) {
+    const { POSTGRES_CREDENTIALS, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB } =
+        process.env;
+
+    if (POSTGRES_CREDENTIALS && POSTGRES_HOST && POSTGRES_PORT && POSTGRES_DB) {
+        const { user, password } = JSON.parse(POSTGRES_CREDENTIALS);
+
         elizaLogger.info("Initializing PostgreSQL connection...");
         const db = new PostgresDatabaseAdapter({
-            connectionString: process.env.POSTGRES_URL,
+            connectionString: `postgres://${user}:${password}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}`,
             parseInputs: true,
         });
 
