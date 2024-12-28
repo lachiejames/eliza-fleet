@@ -1,5 +1,5 @@
 {
-    "name": "@eliza/cdk",
+    "name": "@elizaos/cdk",
     "version": "0.1.6",
     "main": "dist/index.js",
     "type": "module",
