@@ -3,7 +3,7 @@ name: Deploy
 on:
     push:
         branches:
-            - main-lachie
+            - main
 
 jobs:
     cdk_deploy_eliza_fleet:
