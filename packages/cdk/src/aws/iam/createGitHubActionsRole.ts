@@ -20,8 +20,13 @@ import * as cdk from "aws-cdk-lib";
  * @returns The created IAM role
  */
 export const createGitHubActionsRole = (
-    scope: cdk.Stack,
-    oidcProviderArn: string
+    {
+        scope,
+        oidcProviderArn,
+    }: {
+        scope: cdk.Stack;
+        oidcProviderArn: string;
+    }
 ) => {
     const { GITHUB_REPOSITORY } = process.env;
     if (!GITHUB_REPOSITORY) {
