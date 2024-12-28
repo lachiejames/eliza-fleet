@@ -1,7 +1,8 @@
 import * as cdk from "aws-cdk-lib";
 import * as ecs from "aws-cdk-lib/aws-ecs";
-import * as rds from "aws-cdk-lib/aws-rds";
 import * as elasticache from "aws-cdk-lib/aws-elasticache";
+import * as rds from "aws-cdk-lib/aws-rds";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import { getECSSecret } from "../aws/secretsmanager/getECSSecret";
 
 export interface CharacterStackConfig {
@@ -15,10 +16,12 @@ export const buildCharacterConfig = ({
     scope,
     rdsInstance,
     redisInstance,
+    imageBucket,
 }: {
     scope: cdk.Stack;
     rdsInstance: rds.DatabaseInstance;
     redisInstance: elasticache.CfnCacheCluster;
+    imageBucket: s3.Bucket;
 }): CharacterStackConfig[] => [
     {
         name: "trump",
@@ -29,6 +32,8 @@ export const buildCharacterConfig = ({
             SERVER_PORT: "3000",
             TWITTER_DRY_RUN: "false",
             REDIS_URL: `redis://${redisInstance.attrRedisEndpointAddress}:${redisInstance.attrRedisEndpointPort}`,
+            AWS_S3_BUCKET: imageBucket.bucketName,
+            AWS_S3_UPLOAD_PATH: `trump/`,
         },
         secrets: {
             OPENAI_API_KEY: getECSSecret({

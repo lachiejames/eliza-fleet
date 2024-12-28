@@ -13,6 +13,7 @@ import { createElizaRedisInstance } from "../aws/elasticache/createElizaRedisIns
 import { createECSSecurityGroup } from "../aws/ec2/createECSSecurityGroup";
 import { buildCharacterConfig } from "../config/characters";
 import { createElizaDockerAsset } from "../aws/ecr/createElizaDockerAsset";
+import { createElizaImageBucket } from "../aws/s3/createElizaImageBucket";
 
 export interface ElizaFleetStackProps extends cdk.StackProps {
     isPrivate: boolean;
@@ -30,6 +31,7 @@ export interface ElizaFleetStackProps extends cdk.StackProps {
  * 3. ECS Cluster for container orchestration
  * 4. Fargate Task Definition and Service
  * 5. Security Groups for network access control
+ * 6. S3 Bucket for storing Eliza-related images
  *
  * The stack supports two deployment modes:
  * - Private (isPrivate: true): More secure with private subnets and NAT Gateway
@@ -50,6 +52,7 @@ export class ElizaFleetStack extends cdk.Stack {
             scope: this,
             vpc,
         });
+        const imageBucket = createElizaImageBucket({ scope: this });
         const ecsSecurityGroup = createECSSecurityGroup({ scope: this, vpc });
 
         rdsSecurityGroup.addIngressRule(
@@ -89,6 +92,7 @@ export class ElizaFleetStack extends cdk.Stack {
             scope: this,
             rdsInstance,
             redisInstance,
+            imageBucket,
         });
 
         // Create services for each character
