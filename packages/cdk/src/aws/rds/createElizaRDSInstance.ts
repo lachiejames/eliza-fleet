@@ -41,6 +41,7 @@ export const createElizaRDSInstance = ({
         publiclyAccessible: !isPrivate,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
         deletionProtection: false,
+        backupRetention: cdk.Duration.days(0), // Disable automated backups while in development
     });
 
     return database;
