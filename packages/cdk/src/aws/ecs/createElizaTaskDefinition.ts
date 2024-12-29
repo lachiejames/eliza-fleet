@@ -29,9 +29,9 @@ export const createElizaTaskDefinition = ({
         taskDefinitionName,
         {
             taskRole,
-            runtimePlatform: {
-                cpuArchitecture: ecs.CpuArchitecture.ARM64,
-            },
+            // runtimePlatform: {
+            //     cpuArchitecture: ecs.CpuArchitecture.ARM64,
+            // },
             cpu: 2048,
             memoryLimitMiB: 4096,
         }
