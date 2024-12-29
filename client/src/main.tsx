@@ -4,6 +4,7 @@ import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react"
 import { router } from "./router.tsx";
 // Create a client
 const queryClient = new QueryClient();
@@ -12,6 +13,7 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <RouterProvider router={router} />
+            <Analytics />
         </QueryClientProvider>
     </StrictMode>
 );
