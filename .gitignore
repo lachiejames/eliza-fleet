@@ -54,3 +54,6 @@ coverage
 .eslintcache
 
 agent/content
+
+# next
+next-env.d.ts

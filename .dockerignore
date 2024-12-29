@@ -10,7 +10,6 @@
 **/node_modules/
 **/.turbo/
 **/dist/
-**/.next/
 **/.cache/
 coverage/
 **/__tests__/
