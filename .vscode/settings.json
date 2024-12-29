@@ -1,47 +1,109 @@
 {
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+    // Language specific settings
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for JavaScript files.
     },
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.insertSpaces": true,
-    "editor.detectIndentation": false,
-    "editor.tabSize": 4,
-    "eslint.format.enable": true,
-    "javascript.format.enable": false,
-    "typescript.format.enable": false,
-    "files.trimTrailingWhitespace": true,
-    "editor.trimAutoWhitespace": true,
-    "cadence.test.maxConcurrency": 5,
-    "cadence.customConfigPath": "packages/plugin-flow/flow.json",
-    "[properties]": {
-        "editor.defaultFormatter": "foxundermoon.shell-format"
-    },
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-    },
-    "[javascriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for JSON files.
     },
     "[jsonc]": {
-        "editor.defaultFormatter": "vscode.json-language-features"
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for JSONC files.
     },
-    "[javascript]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for Markdown files.
     },
-    "[scss]": {
-        "editor.defaultFormatter": "vscode.css-language-features"
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for TypeScript files.
     },
-    "[dotenv]": {
-        "editor.defaultFormatter": "foxundermoon.shell-format"
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for TypeScript React files.
     },
-    "files.associations": {
-        "*.css": "tailwindcss"
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode" // Set Prettier as the default formatter for YAML files.
     },
-    "[shellscript]": {
-        "editor.defaultFormatter": "foxundermoon.shell-format"
-    }
+
+    // Debug settings
+    "debug.javascript.autoAttachFilter": "smart", // Auto attach when running scripts that aren't in a node_modules folder.
+
+    // Diff editor settings
+    "diffEditor.ignoreTrimWhitespace": true, // When enabled, the diff editor ignores changes in leading or trailing whitespace.
+
+    // Editor settings
+    "editor.renderWhitespace": "none", // Controls how the editor should render whitespace characters.
+
+    // Extension settings - ESLint
+    "eslint.codeActionsOnSave.mode": "all", // Fixes all ESLint errors on save.  Has no effect if Auto Save is enabled.
+    "eslint.nodePath": "/Users/lachiejames/dev/eliza-fleet/node_modules/eslint/bin/eslint.js", // Use the Project's ESLint installation for a performance improvement.
+    "eslint.runtime": "/Users/lachiejames/.nvm/versions/node/v22.12.0/bin/node", // Use the Project's Node installation for a performance improvement.
+
+    // Explorer settings
+    "explorer.confirmDelete": false, // Let me delete in peace
+    "explorer.confirmDragAndDrop": false, // Let me drop in peace
+    "explorer.confirmPasteNative": false, // Let me paste in peace
+
+    // Extension settings
+    // "extensions.ignoreRecommendations": true,
+
+    // File settings
+    "files.autoSave": "afterDelay", // An editor with changes is automatically saved after the configured delay.
+    "files.autoSaveDelay": 0, // Apply changes immediately for faster feedback
+
+    // Exclude these files from the workspace for a performance improvement
+    "files.exclude": {
+        "packages/vscode-extension/index.js*": true,
+        "packages/vscode-extension/views.js*": true,
+        "**/.eslintcache": true,
+        "**/.husky/": true,
+        "**/.jest-cache": true,
+        "**/.pnpm-store": true,
+        "**/.turbo": true,
+        "**/build": true,
+        "**/cdk.context.json": true,
+        "**/cdk.out": true,
+        "**/coingeckoDownloads": true,
+        "**/coverage": true,
+        "**/dist": true,
+        "**/e2e-report": true,
+        "**/e2e-test-results": true,
+        "**/node_modules": true
+    },
+
+    // Git settings
+    "git.autofetch": true, // When set to true, commits will automatically be fetched from the default remote of the current Git repository. Setting to all will fetch from all remotes.
+    "git.confirmSync": false, // Confirm before synchronizing Git repositories.
+    "git.enableSmartCommit": true, // Commit all changes when there are no staged changes.
+    "git.openRepositoryInParentFolders": "always", // Open the repository in the parent folder when a subfolder is opened.
+    "git.replaceTagsWhenPull": true, // Automatically replace the local tags with the remote tags in case of a conflict when running the pull command.
+
+    // Extension settings - GitHub Pull Request
+    "githubPullRequests.commentExpandState": "collapseAll", // Collapse all comments by default when a PR is checked out.
+    "githubPullRequests.pullBranch": "never", // Only allow running `git pull` manually to prevent undefined behaviour (e.g. if pnpm deps are out of date)
+
+    // Exclude these files from Search for a performance improvement
+    "search.exclude": {
+        "**/.eslintcache": true,
+        "**/.jest-cache": true,
+        "**/.pnpm-store": true,
+        "**/.turbo": true,
+        "**/build": true,
+        "**/cdk.out": true,
+        "**/coverage": true,
+        "**/dist": true,
+        "**/node_modules": true,
+        "**/tsconfig.tsbuildinfo": true
+    },
+
+    // Typescript settings
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "typescript.implementationsCodeLens.enabled": true,
+    "typescript.preferGoToSourceDefinition": false, // Go to the TS declaration file instead of the bundled JS file
+    "typescript.tsdk": "/Users/lachiejames/dev/eliza-fleet/node_modules/typescript/lib", // Use the Project's TypeScript installation for a performance improvement.
+    "typescript.tsserver.experimental.enableProjectDiagnostics": false, // Might be useful one day, but currently causes performance issues
+    "typescript.tsserver.maxTsServerMemory": 8192, // Improve performance for large workspaces.  But may cause memory issues when encountering complex types (e.g. lang)
+    "typescript.tsserver.nodePath": "/Users/lachiejames/.nvm/versions/node/v22.12.0/bin/node", // Use the Project's Node installation for a performance improvement.
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.preferences.importModuleSpecifier": "non-relative",
+
+    // Theme settings
+    "workbench.colorTheme": "Default Dark Modern" // Replace with your preferred theme
 }
