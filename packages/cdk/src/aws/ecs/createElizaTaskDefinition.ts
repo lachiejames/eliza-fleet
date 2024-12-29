@@ -33,7 +33,7 @@ export const createElizaTaskDefinition = ({
             //     cpuArchitecture: ecs.CpuArchitecture.ARM64,
             // },
             cpu: 2048,
-            memoryLimitMiB: 16384,
+            memoryLimitMiB: 4096,
             ephemeralStorageGiB: 50,
         }
     );
