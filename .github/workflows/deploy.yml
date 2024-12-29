@@ -31,12 +31,16 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            # Set up QEMU for arm64 builds (because we're on a x86_64 machine)
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
             # buildx is required to support caching docker layers
             # using the GitHub Actions cache backend
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
-              # with:
-              #     platforms: linux/arm64
+              with:
+                  platforms: linux/arm64
 
             # Login to AWS via OIDC https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
             - name: Login to AWS

@@ -31,14 +31,13 @@ export const createElizaDockerAsset = ({ scope }: { scope: cdk.Stack }) => {
 
     const assetName = `${scope.stackName}-docker-image`;
     return new ecr_assets.DockerImageAsset(scope, assetName, {
-        // platform: ecr_assets.Platform.LINUX_ARM64,
+        platform: ecr_assets.Platform.LINUX_ARM64,
         assetName,
         directory: projectRoot,
         ignoreMode: cdk.IgnoreMode.DOCKER, // Exclude files based on .dockerignore rules
-        cacheDisabled: true, // Github actions currently OOMs when caching is enabled
         // Optimal caching for GitHub Actions https://benlimmer.com/2024/04/08/caching-cdk-dockerimageasset-github-actions/
-        // cacheFrom: [{ type: "gha" }],
-        // cacheTo: { type: "gha" },
-        // outputs: ["type=docker"],
+        cacheFrom: [{ type: "gha", params: { mode: "max" } }],
+        cacheTo: { type: "gha" },
+        outputs: ["type=docker"],
     });
 };
