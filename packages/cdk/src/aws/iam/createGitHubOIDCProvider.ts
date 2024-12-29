@@ -1,4 +1,3 @@
-
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as cdk from "aws-cdk-lib";
 
@@ -15,13 +14,7 @@ import * as cdk from "aws-cdk-lib";
  * @param scope - The CDK Stack scope to create the provider in
  * @returns The created OIDC provider instance
  */
-export const createGitHubOIDCProvider = (
-    {
-        scope,
-    }: {
-        scope: cdk.Stack;
-    }
-) => {
+export const createGitHubOIDCProvider = ({ scope }: { scope: cdk.Stack }) => {
     const providerName = `${scope.stackName}-provider`;
     return new iam.OpenIdConnectProvider(scope, providerName, {
         url: "https://token.actions.githubusercontent.com",

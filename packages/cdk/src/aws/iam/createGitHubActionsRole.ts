@@ -19,15 +19,13 @@ import * as cdk from "aws-cdk-lib";
  * @param oidcProviderArn - The ARN of the GitHub OIDC provider
  * @returns The created IAM role
  */
-export const createGitHubActionsRole = (
-    {
-        scope,
-        oidcProviderArn,
-    }: {
-        scope: cdk.Stack;
-        oidcProviderArn: string;
-    }
-) => {
+export const createGitHubActionsRole = ({
+    scope,
+    oidcProviderArn,
+}: {
+    scope: cdk.Stack;
+    oidcProviderArn: string;
+}) => {
     const { GITHUB_REPOSITORY } = process.env;
     if (!GITHUB_REPOSITORY) {
         throw new Error("GITHUB_REPOSITORY is not set");

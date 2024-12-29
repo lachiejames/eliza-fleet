@@ -1,4 +1,3 @@
-
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as cdk from "aws-cdk-lib";
@@ -14,15 +13,13 @@ import * as cdk from "aws-cdk-lib";
  * @param vpc - The VPC to place the cluster in
  * @returns The created ECS cluster
  */
-export const createElizaCluster = (
-    {
-        scope,
-        vpc,
-    }: {
-        scope: cdk.Stack;
-        vpc: ec2.IVpc;
-    }
-) => {
+export const createElizaCluster = ({
+    scope,
+    vpc,
+}: {
+    scope: cdk.Stack;
+    vpc: ec2.IVpc;
+}) => {
     const clusterName = `${scope.stackName}-cluster`;
     return new ecs.Cluster(scope, clusterName, {
         clusterName,

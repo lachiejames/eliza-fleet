@@ -21,6 +21,9 @@ export class GitHubActionsStack extends cdk.Stack {
         super(scope, id, props);
 
         const oidcProvider = createGitHubOIDCProvider({ scope: this });
-        createGitHubActionsRole({ scope: this, oidcProviderArn: oidcProvider.openIdConnectProviderArn });
+        createGitHubActionsRole({
+            scope: this,
+            oidcProviderArn: oidcProvider.openIdConnectProviderArn,
+        });
     }
 }
