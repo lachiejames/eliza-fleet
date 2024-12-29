@@ -1,56 +1,34 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
-import { useParams } from "react-router-dom";
-
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarTrigger,
-} from "@/components/ui/sidebar";
-
-// Menu items.
-const items = [
-    {
-        title: "Chat",
-        url: "chat",
-        icon: Inbox,
-    },
-    {
-        title: "Character Overview",
-        url: "character",
-        icon: Calendar,
-    },
-];
+import { Link } from 'react-router-dom';
+import { Sidebar } from './ui/sidebar';
+import { Button } from './ui/button';
+import { LayoutDashboard, UserCircle, Key } from 'lucide-react';
 
 export function AppSidebar() {
-    const { agentId } = useParams();
-
-    return (
-        <Sidebar>
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Application</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {items.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
-                                        <a href={`/${agentId}/${item.url}`}>
-                                            <item.icon />
-                                            <span>{item.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-            </SidebarContent>
-        </Sidebar>
-    );
+  return (
+    <Sidebar>
+      <div className="px-3 py-2">
+        <h2 className="mb-2 px-4 text-lg font-semibold">Eliza Fleet</h2>
+        <div className="space-y-1">
+          <Link to="/">
+            <Button variant="ghost" className="w-full justify-start">
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Dashboard
+            </Button>
+          </Link>
+          <Link to="/character">
+            <Button variant="ghost" className="w-full justify-start">
+              <UserCircle className="mr-2 h-4 w-4" />
+              Character Profile
+            </Button>
+          </Link>
+          <Link to="/credentials">
+            <Button variant="ghost" className="w-full justify-start">
+              <Key className="mr-2 h-4 w-4" />
+              Platform Credentials
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </Sidebar>
+  );
 }
