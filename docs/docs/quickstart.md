@@ -215,13 +215,13 @@ pnpm start --characters="characters/trump.character.json,characters/tate.charact
 
 1. **Node.js Version**
 
-   - Ensure Node.js 23.3.0 is installed
+   - Ensure Node.js 22.12.0 is installed
    - Use `node -v` to check version
    - Consider using [nvm](https://github.com/nvm-sh/nvm) to manage Node versions
 
    NOTE: pnpm may be bundled with a different node version, ignoring nvm. If this is the case, you can use
    ```bash
-   pnpm env use --global 23.3.0
+   pnpm env use --global 22.12.0
    ```
    to force it to use the correct one.
 

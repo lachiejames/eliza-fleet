@@ -34,7 +34,7 @@
 ### 필수 요구사항:
 
 - [Python 2.7+](https://www.python.org/downloads/)
-- [Node.js 23.3+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [Node.js 22.12+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [pnpm](https://pnpm.io/installation)
 
 > **Windows 사용자 참고:** [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install-manual) 필요.
