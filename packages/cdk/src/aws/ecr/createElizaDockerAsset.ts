@@ -36,8 +36,10 @@ export const createElizaDockerAsset = ({ scope }: { scope: cdk.Stack }) => {
         directory: projectRoot,
         ignoreMode: cdk.IgnoreMode.DOCKER, // Exclude files based on .dockerignore rules
         // Optimal caching for GitHub Actions https://benlimmer.com/2024/04/08/caching-cdk-dockerimageasset-github-actions/
-        cacheFrom: [{ type: "gha", params: { mode: "max" } }],
-        cacheTo: { type: "gha" },
         outputs: ["type=docker"],
+        cacheTo: { type: "gha" },
+        cacheFrom: [{ type: "gha" }],
+        // Not using max mode because it's causing out-of-disk-space errors in GitHub Actions
+        // cacheFrom: [{ type: "gha", params: { mode: "max" } }],
     });
 };

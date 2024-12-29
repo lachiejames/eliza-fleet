@@ -2,8 +2,8 @@ name: Deploy
 
 on:
     push:
-        # branches:
-        #     - main
+        branches:
+            - main
 
 jobs:
     cdk_deploy_eliza_fleet:
@@ -60,9 +60,9 @@ jobs:
                   node-version-file: .nvmrc
                   cache: "pnpm"
 
-            # Above may restore cache directory, but we still need to install node_modules
+            # Only install node_modules for the cdk package to save space
             - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+              run: pnpm install --filter=@elizaos/cdk --frozen-lockfile
 
             # This is required for the `gha` cache to work with CDK DockerImageAssets
             # See https://docs.docker.com/build/cache/backends/gha/#authentication
