@@ -1,101 +1,85 @@
-import Image from "next/image";
+import { CheckoutButton } from "@/components/checkout-button";
+import Stripe from "stripe";
 
-export default function Home() {
+async function getPlans() {
+  const { STRIPE_SECRET_KEY } = process.env;
+  if (!STRIPE_SECRET_KEY) {
+    throw new Error("Stripe secret key not configured");
+  }
+
+  const stripe = new Stripe(STRIPE_SECRET_KEY);
+  const prices = await stripe.prices.list({
+    active: true,
+    expand: ['data.product'],
+    type: 'recurring'
+  });
+
+  return prices.data;
+}
+
+export default async function Home() {
+  const plans = await getPlans();
+  const sortedPlans = plans.sort((a, b) => (a.unit_amount || 0) - (b.unit_amount || 0));
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-black text-white">
+      {/* Hero Section with Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-black to-black pointer-events-none" />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <main className="relative container mx-auto px-4 py-24">
+        {/* Header */}
+        <h1 className="text-6xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+          Eliza Fleet Plans
+        </h1>
+
+        {/* Plans Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {sortedPlans.map((plan, index) => {
+            const product = plan.product as Stripe.Product;
+            const isPopular = product.metadata.popular === 'true';
+            const features = product.metadata.features ? JSON.parse(product.metadata.features) : [];
+            const priceAmount = plan.unit_amount ? plan.unit_amount / 100 : 0;
+
+            return (
+              <div key={plan.id} className="relative group">
+                <div className={`absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 ${isPopular ? 'opacity-75' : ''}`} />
+                <div className="relative bg-black border border-white/10 rounded-lg p-8 h-full flex flex-col hover:border-purple-500/50 transition-colors">
+                  {isPopular && (
+                    <div className="absolute -top-5 right-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-sm">
+                      Popular
+                    </div>
+                  )}
+                  <h2 className="text-2xl font-bold mb-2">{product.name}</h2>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold">${priceAmount}</span>
+                    <span className="text-gray-400">/month</span>
+                  </div>
+                  <ul className="space-y-4 mb-8 flex-grow">
+                    {features.map((feature: string, i: number) => (
+                      <li key={i} className="flex items-center text-gray-300">
+                        <span className="mr-3 text-purple-400">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <CheckoutButton
+                    priceId={plan.id}
+                    className={`w-full ${
+                      isPopular
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 transition-opacity'
+                        : index === 0
+                        ? 'bg-white text-black hover:bg-purple-100 transition-colors'
+                        : 'border border-purple-500 text-white hover:bg-purple-950/50 transition-colors'
+                    }`}
+                  >
+                    {index === 0 ? 'Get Started' : index === sortedPlans.length - 1 ? 'Contact Sales' : 'Subscribe'}
+                  </CheckoutButton>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
