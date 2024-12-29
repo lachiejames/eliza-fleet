@@ -34,7 +34,6 @@ export const createElizaTaskDefinition = ({
             // },
             cpu: 2048,
             memoryLimitMiB: 4096,
-            ephemeralStorageGiB: 50,
         }
     );
 
