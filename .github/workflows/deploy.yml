@@ -62,6 +62,11 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            # This is required for the `gha` cache to work with CDK DockerImageAssets
+            # See https://docs.docker.com/build/cache/backends/gha/#authentication
+            - name: Expose GitHub Runtime
+              uses: crazy-max/ghaction-github-runtime@v3
+
             # Generate CDK diff for logging purposes
             - name: Generate CDK diff
               run: pnpm cdk diff --require-approval never eliza-fleet
