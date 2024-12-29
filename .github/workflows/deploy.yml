@@ -2,8 +2,8 @@ name: Deploy
 
 on:
     push:
-        branches:
-            - main
+        # branches:
+        #     - main
 
 jobs:
     cdk_deploy_eliza_fleet:
@@ -41,6 +41,8 @@ jobs:
               uses: docker/setup-buildx-action@v3
               with:
                   platforms: linux/arm64
+                  install: true
+                  use: true
 
             # Login to AWS via OIDC https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
             - name: Login to AWS
