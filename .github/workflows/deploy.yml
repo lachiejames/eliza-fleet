@@ -60,14 +60,15 @@ jobs:
                   node-version-file: .nvmrc
                   cache: "pnpm"
 
-            # Only install node_modules for the cdk package to save space
+            # Above may restore cache directory, but we still need to install node_modules
             - name: Install dependencies
-              run: pnpm install --filter=@elizaos/cdk --frozen-lockfile
+              run: pnpm install --frozen-lockfile
 
+            # GHA caching is disabled because it causes out of disk space errors
             # This is required for the `gha` cache to work with CDK DockerImageAssets
             # See https://docs.docker.com/build/cache/backends/gha/#authentication
-            - name: Expose GitHub Runtime
-              uses: crazy-max/ghaction-github-runtime@v3
+            # - name: Expose GitHub Runtime
+            #   uses: crazy-max/ghaction-github-runtime@v3
 
             # Generate CDK diff for logging purposes
             - name: Generate CDK diff
