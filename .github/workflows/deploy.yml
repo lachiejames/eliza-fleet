@@ -8,7 +8,7 @@ on:
 jobs:
     cdk_deploy_eliza_fleet:
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 60
 
         # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
         permissions:
